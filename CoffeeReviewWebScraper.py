@@ -16,9 +16,7 @@ class Review(JSONEncoder):
         return o.__dict__
 
 
-def webscrap():
-    url = "https://www.coffeereview.com/top-30-coffees-2017/"
-
+def webscrap(url):
     http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
     response = http.request('GET', url, retries=False)
     soup = BeautifulSoup(response.data, "html.parser")
@@ -36,7 +34,14 @@ def webscrap():
             # get request
             soup2 = BeautifulSoup(driver.page_source, "html.parser")
             tags = soup2.find_all("p")
+            # print(review)
             review = Review()
+            h2 = soup2.find("h2")
+            review.data['title'] = h2.getText()
+            h3 = soup2.find("h3")
+            review.data['review title'] = h3.getText()
+            ratinglist = soup2.find("div", {"class": "review-rating"})
+            review.data['review rating'] = ratinglist.getText()
 
             # loop thru webpage
             for tag in tags:
@@ -46,7 +51,6 @@ def webscrap():
                         str1 = str(tag.get_text()).split(":")
                         print(str1)
                         if str1[0] is '':
-                            print("list is empty")
                             continue
                         if not str1[0] is '' and len(str1) == 1 and not str1[0] is " ":
                             # get the previous entry in the list
@@ -59,7 +63,7 @@ def webscrap():
                                     continue
                         elif len(str1) > 1 and str1 is not None:
                             if ":" not in tag.get_text():
-                                print("text: " + tag.get_text())
+                                print(tag.get_text())
                             review.data[str1[0]] = str1[1]
 
             marshalobj.append(review)
@@ -70,4 +74,7 @@ def webscrap():
 
 
 if __name__ == '__main__':
-    webscrap()
+    url = "https://www.coffeereview.com/top-30-coffees-2017/"
+    webscrap(url)
+    # url2 = "https://www.coffeereview.com/top-30-coffees-2017/page/2/"
+    # webscrap(url2)
