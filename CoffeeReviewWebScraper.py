@@ -28,6 +28,7 @@ def webscrap():
         if link.get('title') == "Read Complete Review":
             # follow link
             print(link.get('href'))
+            # if href already exits in the map continue
             # set up selenium driver
             driver = webdriver.Chrome()
             driver.implicitly_wait(30)
@@ -42,11 +43,26 @@ def webscrap():
                 if tag is not None:
                     expr = re.compile(':|[.]')
                     if re.search(expr, str(tag)):
-                        print(tag.get_text())
                         str1 = str(tag.get_text()).split(":")
-                        if len(str1) > 1:
+                        print(str1)
+                        if str1[0] is '':
+                            print("list is empty")
+                            continue
+                        if not str1[0] is '' and len(str1) == 1 and not str1[0] is " ":
+                            # get the previous entry in the list
+                            if review.data['Blind Assessment']:
+                                if review.data.get('Blind Assessment') is ' ':
+                                    review.data['Blind Assessment'] = str1[0]
+                                    continue
+                                if review.data.get('Notes') is '':
+                                    review.data['Notes'] = str1[0]
+                                    continue
+                        elif len(str1) > 1 and str1 is not None:
+                            if ":" not in tag.get_text():
+                                print("text: " + tag.get_text())
                             review.data[str1[0]] = str1[1]
-                            marshalobj.append(review)
+
+            marshalobj.append(review)
             with open('coffeeData.json', 'w') as outfile:
                 json.dump([ob.data for ob in marshalobj], outfile)
 
